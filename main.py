@@ -1,5 +1,5 @@
-from Database.data_hh import DBManager
-from Database.database_manager import HH_api_db
+from database.data_hh import HH_api_db
+from database.database_manager import DBManager
 
 
 def main():
