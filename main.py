@@ -1,46 +1,39 @@
-from database.data_hh import HH_api_db
 from database.database_manager import DBManager
+from utils.utils import create_database, create_tables, insert_data_into_tables
 
 
-def main():
-    # Get info about employers
-    response = HH_api_db()
+def user_interaction():
 
-    employers_dict = response.employers_dict
-    employers_all_vacancies = response.get_vacancies()
+    list_employers = [3127, 3776, 4934, 3529, 4181, 78638, 54979, 64174, 3388, 2180]
+    dbm = DBManager()
+    create_database('db_name')
+    create_tables('db_name')
+    insert_data_into_tables(list_employers)
 
-    # Create database
-    database = DBManager()
-    database.create_database('parser')
+    while True:
 
-    # Create tables
-    database.create_tables('parser')
+        new = input(
+            '1 - список всех компаний и кол-во вакансий у каждой компании\n'
+            '2 - список всех вакансий с указанием названия компании, вакансии, зарплаты и ссылки на вакансию\n'
+            '3 - средняя зарплата по вакансиям\n'
+            '4 - список всех вакансий, у которых зарплата выше средней по всем вакансиям\n'
+            '5 - список вакансий, в названии которых содержится ключевое слово\n'
+            'Выход - закончить\n'
+        )
 
-    # Save info to database
-    database.save_info_to_database('parser', employers_dict, employers_all_vacancies)
+        if new == '1':
+            print(dbm.get_companies_and_vacancies_count())
+        elif new == '2':
+            print(dbm.get_all_vacancies())
+        elif new == '3':
+            print(dbm.get_avg_salary())
+        elif new == '4':
+            print(dbm.get_vacancies_with_higher_salary())
+        elif new == '5':
+            keyword = str(input('Найти: '))
+            print(dbm.get_vacancies_with_keyword(keyword))
+        elif new == 'Выход':
+            break
 
-    print("Список компаний и количество вакансий в компаниях:")
-    for row in database.get_companies_and_vacancies_count('parser'):
-        print(f"{row[0]} - {row[1]}")
-
-    print("Список всех вакансий с указанием названия компании:")
-    for row in database.get_all_vacancies('parser'):
-        print(f"{row[0]} - {row[1]}")
-
-    print("Получает среднюю зарплату по вакансиям:")
-    for row in database.get_avg_salary('parser'):
-        print(f"{row[0]}")
-
-    print("Список всех вакансий, у которых зарплата выше средней по всем вакансиям:")
-    for row in database.get_vacancies_with_higher_salary('parser'):
-        print(f"{row[0]}")
-
-    keyword = 'Оператор'
-
-    print("Список всех вакансий, в названии которых содержатся переданные в метод слова:")
-    for row in database.get_vacancies_with_keyword('parser', keyword):
-        print(f"{row[0]} ")
-
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    user_interaction()
