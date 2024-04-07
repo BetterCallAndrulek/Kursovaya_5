@@ -2,7 +2,7 @@ from configparser import ConfigParser
 import codecs
 
 
-def config(filename=r"C:\Users\ddemo\PycharmProjects\pythonProject11\database.ini", section="postgresql"):
+def config(filename="database.ini", section="postgresql"):
     # create a parser
     parser = ConfigParser()
     # read config file
