@@ -3,8 +3,9 @@ from utils.config import config
 
 
 class DBManager:
-    def __init__(self, db_name):
-        self.db_name = db_name
+    def __init__(self, params):
+        self.conn = psycopg2.connect(**params)
+        self.cur = self.conn.cursor()
 
     def execute_query(self, query) -> list:
         conn = psycopg2.connect(dbname='db_name', **config())
