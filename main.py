@@ -2,38 +2,45 @@ from database.database_manager import DBManager
 from utils.utils import create_database, create_tables, insert_data_into_tables
 
 
-def user_interaction():
+def main():
+    db_name = 'hh_db'
 
-    list_employers = [3127, 3776, 4934, 3529, 4181, 78638, 54979, 64174, 3388, 2180]
-    dbm = DBManager()
-    create_database('db_name')
-    create_tables('db_name')
-    insert_data_into_tables(list_employers)
+    params = config()
+    employers = get_hh_employers()
+    vacancies = get_hh_data(employers)
+    create_database(params, db_name)
+    print(f"БД {db_name} успешно создана")
 
-    while True:
+    params.update({'dbname': db_name})
+    try:
+        with psycopg2.connect(**params) as conn:
+            with conn.cursor() as cur:
+                create_employers_table(cur)
+                print("Таблица employers успешно создана")
+                create_vacancies_table(cur)
+                print("Таблица vacancies успешно создана")
+                insert_employers_data(cur, employers)
+                print("Данные в employers успешно добавлены")
+                insert_vacancies_data(cur, vacancies)
+                print("Данные в vacancies успешно добавлены")
+        dbmanager = DBManager(params)
+        print('\nCписок компаний:')
+        dbmanager.get_companies_and_vacancies_count()
+        print('\nСписок вакансий:')
+        dbmanager.get_all_vacancies()
+        print('\nСредняя зарплата по вакансиям от/до:')
+        dbmanager.get_avg_salary()
+        print('\nCписок вакансий, у которых зарплата выше средней:')
+        dbmanager.get_vacancies_with_higher_salary()
+        word = input('\nВведите слово для поиска вакансий: ').title()
+        print('Cписок вакансий, соответствующих требованию:')
+        dbmanager.get_vacancies_with_keyword(word)
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if conn is not None:
+            conn.close()
 
-        new = input(
-            '1 - список всех компаний и кол-во вакансий у каждой компании\n'
-            '2 - список всех вакансий с указанием названия компании, вакансии, зарплаты и ссылки на вакансию\n'
-            '3 - средняя зарплата по вакансиям\n'
-            '4 - список всех вакансий, у которых зарплата выше средней по всем вакансиям\n'
-            '5 - список вакансий, в названии которых содержится ключевое слово\n'
-            'Выход - закончить\n'
-        )
 
-        if new == '1':
-            print(dbm.get_companies_and_vacancies_count())
-        elif new == '2':
-            print(dbm.get_all_vacancies())
-        elif new == '3':
-            print(dbm.get_avg_salary())
-        elif new == '4':
-            print(dbm.get_vacancies_with_higher_salary())
-        elif new == '5':
-            keyword = str(input('Найти: '))
-            print(dbm.get_vacancies_with_keyword(keyword))
-        elif new == 'Выход':
-            break
-
-if __name__ == "__main__":
-    user_interaction()
+if __name__ == '__main__':
+    main()
