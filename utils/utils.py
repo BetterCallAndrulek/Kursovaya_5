@@ -4,7 +4,6 @@ from classes.HHParser import HHParser
 
 
 def get_hh_employers() -> list:
-    """Возвращает список данных о 10 работодателях с hh.ru"""
     url = "https://api.hh.ru/employers"
     params = {'only_with_vacancies': True,
               'per_page': 10}
@@ -16,8 +15,6 @@ def get_hh_employers() -> list:
 
 
 def get_hh_data(employers: list) -> list:
-    """Возващает список данных о вакансиях по выбранным
-    работодателям с hh.ru"""
     url = "https://api.hh.ru/vacancies"
     vacancies_data = []
     for employer in employers:
@@ -29,7 +26,6 @@ def get_hh_data(employers: list) -> list:
 
 
 def create_database(params: dict, db_name: str) -> None:
-    """Создает новую базу данных"""
     conn = psycopg2.connect(**params)
     conn.autocommit = True
     cur = conn.cursor()
@@ -39,7 +35,6 @@ def create_database(params: dict, db_name: str) -> None:
 
 
 def create_employers_table(cur) -> None:
-    """Создает таблицу employers"""
     cur.execute('''
         CREATE TABLE employers (
             id INTEGER PRIMARY KEY,
@@ -50,7 +45,6 @@ def create_employers_table(cur) -> None:
 
 
 def create_vacancies_table(cur) -> None:
-    """Создает таблицу vacancies"""
     cur.execute('''
         CREATE TABLE vacancies (
             id INTEGER PRIMARY KEY,
@@ -66,7 +60,6 @@ def create_vacancies_table(cur) -> None:
 
 
 def insert_employers_data(cur, employers: list) -> None:
-    """Заполняет таблицу employers данными"""
     for employer in employers:
         query = "INSERT INTO employers VALUES (%s, %s, %s)"
         employer_data = (int(employer['id']),
@@ -76,7 +69,6 @@ def insert_employers_data(cur, employers: list) -> None:
 
 
 def insert_vacancies_data(cur, vacancies: list) -> None:
-    """Заполняет таблицу vacancies данными"""
     for vacancy in vacancies:
         query = "INSERT INTO vacancies VALUES (%s, %s, %s, %s, %s, %s, %s)"
         try:
