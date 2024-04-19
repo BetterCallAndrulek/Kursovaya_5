@@ -1,6 +1,10 @@
-from database.database_manager import DBManager
-from utils.utils import create_database, create_tables, insert_data_into_tables
+import psycopg2
 
+from src.config import config
+from src.dbmanager import DBManager
+from utils import (create_database, get_hh_data, get_hh_employers,
+                   create_employers_table, create_vacancies_table,
+                   insert_employers_data, insert_vacancies_data)
 
 def main():
     db_name = 'hh_db'
