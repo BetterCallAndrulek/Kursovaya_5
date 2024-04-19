@@ -1,52 +1,69 @@
 import psycopg2
 from utils.config import config
 
-
 class DBManager:
     def __init__(self, params):
         self.conn = psycopg2.connect(**params)
         self.cur = self.conn.cursor()
 
-    def execute_query(self, query) -> list:
-        conn = psycopg2.connect(dbname='db_name', **config())
-        with conn:
-            with conn.cursor() as cur:
-                cur.execute(query)
-                result = cur.fetchall()
-        conn.close()
-        return result
-
     def get_companies_and_vacancies_count(self):
-        ''' Метод, получающий список всех компаний и вакансий у каждой компании. '''
-
-
-        result = self.execute_query('SELECT employers.name, COUNT(vacancies.employer_id) AS vacancies_count FROM employers LEFT JOIN vacancies ON employers.employer_id = vacancies.employer_id GROUP BY employers.name')
-        return result
-
+        self.cur.execute('''
+                            SELECT a.name, COUNT(b.*) as number_of_vacancies
+                            FROM employers a
+                            LEFT JOIN vacancies b
+                            ON a.id = b.employer_id
+                            GROUP BY a.name
+                            ORDER BY COUNT(b.*) DESC
+                            ''')
+        rows = self.cur.fetchall()
+        for row in rows:
+            print(f'{row[0]} (вакансий - {row[1]})')
 
     def get_all_vacancies(self):
-        ''' Метод, получающий список всех вакансий. '''
-
-        result = self.execute_query('SELECT employers.name, vacancies.name, vacancies.salary_from, vacancies.salary_to, vacancies.url FROM employers JOIN vacancies using (employer_id)')
-        return result
-
+        self.cur.execute('''
+                            SELECT a.name, a.salary_from, a.salary_to, a.url,
+                                   b.name as employer_name
+                            FROM vacancies a
+                            LEFT JOIN employers b
+                            ON a.employer_id = b.id
+                            ''')
+        rows = self.cur.fetchall()
+        for row in rows:
+            print(f'{row[0]}, зарплата от {row[1]} до {row[2]}, '
+                  f'ссылка: {row[3]}, работодатель: {row[4]}')
 
     def get_avg_salary(self):
-        ''' Метод, получающий среднюю зарплату по вакансиям. '''
-
-        result = self.execute_query('SELECT AVG(salary_from) AS payment_avg FROM vacancies')
-        return result
-
+        """Получает среднюю зарплату по вакансиям"""
+        self.cur.execute('''
+                        SELECT ROUND(AVG(salary_from)) AS average_salary_from,
+                        ROUND(AVG(salary_to)) AS average_salary_to
+                        FROM vacancies
+                        ''')
+        rows = self.cur.fetchall()
+        for row in rows:
+            print(f'{row[0]}/{row[1]}')
 
     def get_vacancies_with_higher_salary(self):
-        ''' Метод, получающий список всех вакансий, у которых зарплата выше средней по всем вакансиям. '''
+        """Получает список всех вакансий, у которых
+        зарплата выше средней по всем вакансиям"""
+        self.cur.execute('''
+                            SELECT *
+                            FROM vacancies
+                            WHERE salary_from >
+                            (SELECT AVG(salary_from) FROM vacancies)
+                            ''')
+        rows = self.cur.fetchall()
+        for row in rows:
+            print(row)
 
-        result = self.execute_query('SELECT * FROM vacancies WHERE salary_from > (select AVG(salary_from) FROM vacancies)')
-        return result
-
-
-    def get_vacancies_with_keyword(self, keywords):
-        ''' Метод, поиска всех вакансий по ключевому слову. '''
-
-        result = self.execute_query(f'SELECT * FROM vacancies WHERE name LIKE \'%{keywords}%\'')
-        return result
+    def get_vacancies_with_keyword(self, word):
+        """Получает список всех вакансий, в названии которых
+        содержатся переданные в метод слова"""
+        self.cur.execute(f'''
+                            SELECT *
+                            FROM vacancies
+                            WHERE name LIKE '{word}%'
+                            ''')
+        rows = self.cur.fetchall()
+        for row in rows:
+            print(row)
