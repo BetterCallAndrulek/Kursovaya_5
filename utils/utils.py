@@ -1,6 +1,7 @@
+import json
 import psycopg2
-from utils.config import config
-from classes.HHParser import HHParser
+import requests
+from psycopg2 import sql
 
 
 def get_hh_employers() -> list:
