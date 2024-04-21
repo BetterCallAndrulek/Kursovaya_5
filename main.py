@@ -1,6 +1,6 @@
 import psycopg2
 
-from utils import config
+from utils.config import config
 from database.database_manager import DBManager
 from utils.utils import (create_database, get_hh_data, get_hh_employers,
                    create_employers_table, create_vacancies_table,
